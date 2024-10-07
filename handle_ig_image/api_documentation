@@ -1,0 +1,128 @@
+DELETE /delete_image/{imageId}
+
+Path Parameters:
+
+- imageId: The ID of the image to be deleted.
+
+Response:
+
+- 200 OK:
+
+  {
+
+      "message": "Image deleted successfully"
+
+  }
+
+- 500 Internal Server Error:
+
+  {
+
+      "error": "Failed to delete from DynamoDB: {error_message}"
+
+  }
+- 500 Internal Server Error:
+
+  {
+
+      "error": "Failed to delete from S3: {error_message}"
+
+  }
+
+
+
+GET /download_image/{imageId}
+
+Request Parameters:
+- pathParameters:
+    - imageId: "string" (The ID of the image to retrieve)
+
+Response:
+{
+    "statusCode": 200,  // HTTP status code
+    "headers": {
+        "Content-Type": "image/jpeg",  // Type of the image being returned
+        "Content-Disposition": "attachment; filename=\"imageKey\""  // Suggested filename for download
+    },
+    "body": "base64_encoded_image_content",  // The image content encoded in base64
+    "isBase64Encoded": true  // Indicates that the body is base64 encoded
+}
+Error Response:
+{
+    "statusCode": 4xx,  // HTTP error status code
+    "body": {
+        "error": "string"  // Error message detailing the issue
+    }
+}
+
+
+
+GET /image/{imageId}
+Request Parameters:
+- pathParameters:
+    - imageId: "string" (The ID of the image to retrieve)
+
+Response:
+- 200 OK:
+    {
+        "imageId": "string",
+        "imageUrl": "string",
+        "description": "string" (optional),
+        "tags": ["string"] (optional)
+    }
+- 404 Not Found:
+    {
+        "error": "Image not found"
+    }
+
+
+GET /list_images
+Query Parameters:
+- userId (optional): The ID of the user whose images are to be retrieved.
+- tags (optional): A comma-separated list of tags to filter the images.
+
+Response:
+- 200 OK:
+    - Body: A JSON array of image objects, each containing the image data and associated tags.
+- 500 Internal Server Error:
+    - Body: A JSON object with an error message if the request fails.
+
+
+POST /upload
+Request Body:
+{
+    "image": "base64_encoded_image_data",
+    "userId": "string",
+    "description": "string",
+    "tags": ["string"]
+}
+Response:
+{
+    "message": "Image uploaded successfully",
+    "imageId": "string"
+}
+
+
+
+GET /view/{imageId}
+Path Parameters:
+- imageId: The ID of the image to retrieve.
+
+Response:
+- Status Code 200:
+  {
+      "statusCode": 200,
+      "headers": {
+          "Content-Type": "image/jpeg",
+          "Content-Disposition": "inline; filename=\"{imageId}.jpg\""
+      },
+      "body": "base64_encoded_image_data",
+      "isBase64Encoded": true
+  }
+- Status Code 404:
+  {
+      "statusCode": 404,
+      "body": {
+          "error": "Image not found: {error_message}"
+      }
+  }
