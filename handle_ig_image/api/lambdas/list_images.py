@@ -18,10 +18,8 @@ class ListImages:
             filtered_images = []
 
             if user_id:
-                response = table.query(
-                    IndexName='userId-index',  # Ensure you have a Global Secondary Index for userId
-                    KeyConditionExpression=Key('userId').eq(user_id)
-                )
+                response = table.query(KeyConditionExpression= self.dynamodb_client.conditions.Key('UserId').eq(user_id)
+                                       )
                 filtered_images.extend(response.get('Items', []))
             else:
                 response = table.scan()
