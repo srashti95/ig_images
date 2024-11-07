@@ -9,24 +9,38 @@ class ImageDownloader:
         self.bucket_name = bucket_name
 
     def download_image(self, image_key):
+        if not self.bucket_name or not image_key:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Bucket name and image key are required.'}),
+                'headers': {
+                    'Content-Type': 'application/json'
+                }
+            }
+
         try:
-            response = self.s3_client.get_object(Bucket=self.bucket_name, Key=image_key)
-            image_content = response['Body'].read()
+            # Generate a pre-signed URL for the S3 object
+            url = self.s3_client.generate_presigned_url('get_object',
+                                                        Params={'Bucket': self.bucket_name, 'Key': image_key},
+                                                        ExpiresIn=3600)  # URL expires in 1 hour
 
             return {
                 'statusCode': 200,
+                'body': json.dumps({
+                    'message': 'Pre-signed URL generated successfully!',
+                    'url': url
+                }),
                 'headers': {
-                    'Content-Type': 'image/jpeg',
-                    'Content-Disposition': f'attachment; filename="{image_key}"'
-                },
-                'body': image_content,
-                'isBase64Encoded': True
+                    'Content-Type': 'application/json'
+                }
             }
-
-        except ClientError as e:
+        except Exception as e:
             return {
-                'statusCode': e.response['ResponseMetadata']['HTTPStatusCode'],
-                'body': json.dumps({'error': str(e)})
+                'statusCode': 500,
+                'body': json.dumps({'error': str(e)}),
+                'headers': {
+                    'Content-Type': 'application/json'
+                }
             }
 
 
